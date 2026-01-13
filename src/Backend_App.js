@@ -1,11 +1,17 @@
 import express from 'express'
+import cors from 'cors'
 
 const app = express()
+const corsOptions = {
+    origin: ["http://localhost:5173"]
+}
 
-app.get("fif",(req,res)=>{
-    res.send("something")
+app.use(cors(corsOptions))
+
+app.get("/",(req,res)=>{
+    res.send(console.log("Is it working"))
 })
 
-app.listen(5173,()=>{
-    console.log("hello")
+app.listen(8080,()=>{
+    console.log("Server running")
 })
