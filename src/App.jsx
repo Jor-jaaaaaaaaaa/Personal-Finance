@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
+
 const todayString = new Date().toISOString().split('T')[0]
 
 const initialTransactions = [
