@@ -56,6 +56,7 @@ export default function App() {
     setIncomeForm({ amount: '', category: '', description: '', date: todayString })
     setShowIncome(false)
     addNotification('Income added successfully', 'success')
+    
   }
 
   function addExpense(e) {
