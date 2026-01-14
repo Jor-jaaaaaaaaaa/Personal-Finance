@@ -46,29 +46,58 @@ export default function App() {
     setTimeout(() => setNotifications(n => n.filter(x => x.id !== id)), 3000)
   }
 
-  function addIncome(e) {
+  async function addIncome(e) {
     e && e.preventDefault()
     const amount = parseFloat(incomeForm.amount)
     const { category, description, date } = incomeForm
     if (!amount || !category || !description || !date) return alert('Please fill in all required fields')
-    const newTx = { id: Date.now(), date, category: category.charAt(0).toUpperCase() + category.slice(1), amount, status: 'Success', type: 'income', description }
-    setTransactions(t => [newTx, ...t])
-    setIncomeForm({ amount: '', category: '', description: '', date: todayString })
-    setShowIncome(false)
-    addNotification('Income added successfully', 'success')
     
+    try {
+      // Send to backend
+      const response = await fetch('http://localhost:8080/api/add-transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, category, description, date })
+      })
+      
+      if (!response.ok) throw new Error('Failed to add income')
+      
+      const newTx = { id: Date.now(), date, category: category.charAt(0).toUpperCase() + category.slice(1), amount, status: 'Success', type: 'income', description }
+      setTransactions(t => [newTx, ...t])
+      setIncomeForm({ amount: '', category: '', description: '', date: todayString })
+      setShowIncome(false)
+      addNotification('Income added successfully', 'success')
+    } catch (error) {
+      console.error('Error:', error)
+      addNotification('Failed to add income', 'error')
+    }
   }
 
-  function addExpense(e) {
+  async function addExpense(e) {
     e && e.preventDefault()
     const amount = parseFloat(expenseForm.amount)
     const { category, description, date } = expenseForm
     if (!amount || !category || !description || !date) return alert('Please fill in all required fields')
-    const newTx = { id: Date.now(), date, category: category.charAt(0).toUpperCase() + category.slice(1), amount: -amount, status: 'Success', type: 'expense', description }
-    setTransactions(t => [newTx, ...t])
-    setExpenseForm({ amount: '', category: '', description: '', date: todayString })
-    setShowExpense(false)
-    addNotification('Expense added successfully', 'success')
+    
+    try {
+      // Send to backend
+      const response = await fetch('http://localhost:8080/api/add-transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, category, description, date })
+      })
+      
+      if (!response.ok) throw new Error('Failed to add expense')
+      
+      const newTx = { id: Date.now(), date, category: category.charAt(0).toUpperCase() + category.slice(1), amount: -amount, status: 'Success', type: 'expense', description }
+      setTransactions(t => [newTx, ...t])
+      setExpenseForm({ amount: '', category: '', description: '', date: todayString })
+      setShowExpense(false)
+      addNotification('Expense added successfully', 'success')
+    } catch (error) {
+      console.error('Error:', error)
+      addNotification('Failed to add expense', 'error')
+    }
   }
 
   return (
