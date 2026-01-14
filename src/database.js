@@ -9,18 +9,19 @@ const connection = mysql.createPool({
     database: process.env.DATABASE}
 ).promise()
 
-export async function InsertIncome(amount,category,description,date){
+export async function InsertIncome(amount, category, description, date){
     const result = await connection.query(`
-    insert into finfo (Money,Category,Yapping,Income_Day)  
-    values(?,?,?,?) 
-        `,[amount,category,description,date])
+    insert into incomeinfo (Money, Category, Yapping, Income_Day)  
+    values(?, ?, ?, ?) 
+    `, [amount, category, description, date])
     return result;
 }
-export async function InsertExpense(amount,category,description,date){
+
+export async function InsertExpense(amount, category, description, date){
     const result = await connection.query(`
-    insert into finfo (Money,Category,Yapping,Expense_Day)  
-    values(?,?,?,?) 
-        `,[amount,category,description,date])
+    insert into expenseinfo (Money, Category, Yapping, Expense_Day)  
+    values(?, ?, ?, ?) 
+    `, [amount, category, description, date])
     return result;
 }
 

@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
-import { InsertData } from './database.js'
+import { InsertExpense } from './database.js'
+import { InsertIncome } from './database.js'
 
 const app = express()
 const corsOptions = {
@@ -10,19 +11,25 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use(express.json())
 
-app.get("/",(req,res)=>{
-    res.send(console.log("Is it working"))
-})
+
 
 app.post("/api/add-transaction", async (req,res)=>{
     try {
-        const { amount, category, description, date } = req.body
+        const { amount, category, description, date, type } = req.body
         
-        if (!amount || !category || !description || !date) {
+        if (!amount || !category || !description || !date || !type) {
             return res.status(400).json({ error: 'All fields are required' })
         }
 
-        const result = await InsertData(amount, category, description, date)
+        let result
+        if (type === 'income') {
+            result = await InsertIncome(amount, category, description, date)
+        } else if (type === 'expense') {
+            result = await InsertExpense(amount, category, description, date)
+        } else {
+            return res.status(400).json({ error: 'Invalid transaction type' })
+        }
+
         res.json({ success: true, message: 'Transaction added successfully', data: result })
     } catch (error) {
         console.error('Error inserting data:', error)

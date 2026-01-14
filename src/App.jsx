@@ -57,7 +57,7 @@ export default function App() {
       const response = await fetch('http://localhost:8080/api/add-transaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, category, description, date })
+        body: JSON.stringify({ amount, category, description, date, type: 'income' })
       })
       
       if (!response.ok) throw new Error('Failed to add income')
@@ -84,7 +84,7 @@ export default function App() {
       const response = await fetch('http://localhost:8080/api/add-transaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, category, description, date })
+        body: JSON.stringify({ amount, category, description, date, type: 'expense' })
       })
       
       if (!response.ok) throw new Error('Failed to add expense')
