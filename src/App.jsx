@@ -3,6 +3,11 @@ import React, { useEffect, useState } from 'react'
 const todayString = new Date().toISOString().split('T')[0]
 
 
+function formatDate(dateString) {
+  const [year, month, day] = dateString.split('-')
+  return `${day}-${month}-${year}`
+}
+
 function formatAmount(tx) {
   if (tx.type === 'income') return `+$${tx.amount.toLocaleString()}`
   return `-$${Math.abs(tx.amount).toLocaleString()}`
@@ -113,7 +118,7 @@ export default function App() {
         <h1>Welcome!</h1>
         <div className="header-control">
           <div className="dropdown">Daily <i className="fas fa-chevron-down"></i></div>
-          <div className="date-picker"><i className="fas fa-calendar"></i> 24/12/2025</div>
+          <div className="date-picker"><i className="fas fa-calendar"></i> {formatDate(todayString)}</div>
           <div className="exportBtn"><i className="fas fa-download"></i> Export</div>
         </div>
       </div>
