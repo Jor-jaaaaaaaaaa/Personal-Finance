@@ -1,7 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { InsertExpense } from './database.js'
-import { InsertIncome } from './database.js'
+import { InsertExpense, InsertIncome, GetAllTransactions } from './database.js'
 
 const app = express()
 const corsOptions = {
@@ -11,7 +10,15 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use(express.json())
 
-
+app.get("/api/get-transactions", async (req,res)=>{
+    try {
+        const transactions = await GetAllTransactions()
+        res.json(transactions)
+    } catch (error) {
+        console.error('Error fetching transactions:', error)
+        res.status(500).json({ error: 'Failed to fetch transactions', details: error.message })
+    }
+})
 
 app.post("/api/add-transaction", async (req,res)=>{
     try {

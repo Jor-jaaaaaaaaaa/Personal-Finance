@@ -25,4 +25,15 @@ export async function InsertExpense(amount, category, description, date){
     return result;
 }
 
-// InsertData(100.00,"some","what","2024-12-1")  // Commented out test call
+export async function GetAllTransactions(){
+    const [rows] = await connection.query(`
+    select id, Money as amount, Category as category, Yapping as description, Income_Day as date, 'income' as type, 'Success' as status from incomeinfo
+    union
+    select id, -Money, Category, Yapping, Expense_Day, 'expense', 'Success' from expenseinfo
+    order by date desc
+    `)
+    
+    return rows
+}
+
+

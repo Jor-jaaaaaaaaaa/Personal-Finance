@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
-
 const todayString = new Date().toISOString().split('T')[0]
 
-const initialTransactions = [
-  { id: 1, date: '2025-01-14', category: 'Subscription', amount: -40.0, status: 'Success', type: 'expense' },
-  { id: 2, date: '2025-01-31', category: 'Salary', amount: 2500.0, status: 'Success', type: 'income' },
-  { id: 3, date: '2025-01-2', category: 'Shopping', amount: -2500.0, status: 'Success', type: 'expense' }
-]
 
 function formatAmount(tx) {
   if (tx.type === 'income') return `+$${tx.amount.toLocaleString()}`
@@ -24,7 +18,7 @@ function Notification({ message, type = 'success' }) {
 }
 
 export default function App() {
-  const [transactions, setTransactions] = useState(initialTransactions)
+  const [transactions, setTransactions] = useState([])
   const [showIncome, setShowIncome] = useState(false)
   const [showExpense, setShowExpense] = useState(false)
   const [incomeForm, setIncomeForm] = useState({ amount: '', category: '', description: '', date: todayString })
@@ -32,8 +26,21 @@ export default function App() {
   const [notifications, setNotifications] = useState([])
 
   useEffect(() => {
-    // Just to ensure initial UI is in sync
+    // Load transactions from backend on component mount
+    fetchTransactions()
   }, [])
+
+  async function fetchTransactions() {
+    try {
+      const response = await fetch('http://localhost:8080/api/get-transactions')
+      if (!response.ok) throw new Error('Failed to fetch transactions')
+      const data = await response.json()
+      setTransactions(data)
+    } catch (error) {
+      console.error('Error fetching transactions:', error)
+      // Keep initial transactions if fetch fails
+    }
+  }
 
   const spendingLimit = 12645
 
