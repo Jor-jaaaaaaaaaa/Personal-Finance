@@ -108,9 +108,16 @@ body{
     font-weight: 700;
     margin-bottom: 0.5rem; 
 }
-.change{
+.change1{
     font-size: 0.8rem;
-    color: rgb(82, 198, 82);
+    color: rgb(71, 219, 41);
+    align-items: center;
+    gap: 0.25rem;
+    display: flex;
+}
+.change2{
+    font-size: 0.8rem;
+    color: rgb(238, 62, 18);
     align-items: center;
     gap: 0.25rem;
     display: flex;

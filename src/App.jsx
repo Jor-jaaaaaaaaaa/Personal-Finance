@@ -131,7 +131,7 @@ export default function App() {
               <button className="card-menu"><i className="fas fa-ellipsis-h"></i></button>
             </div>
             <div className="amount income-amount">${monthlyIncome.toLocaleString()}</div>
-            <div className="change"><i className="fas fa-arrow-up"></i>1% vs Last month</div>
+            <div className="change1"><i className="fas fa-arrow-up"></i>1% vs Last month</div>
           </div>
 
           <div className="card">
@@ -140,7 +140,7 @@ export default function App() {
               <button className="card-menu"><i className="fas fa-ellipsis-h"></i></button>
             </div>
             <div className="amount expense-amount">${monthlyExpenses.toLocaleString()}</div>
-            <div className="change"><i className="fas fa-arrow-down"></i>-10% vs Last month</div>
+            <div className="change2"><i className="fas fa-arrow-down"></i>-10% vs Last month</div>
           </div>
 
           <div className="card my-card">
