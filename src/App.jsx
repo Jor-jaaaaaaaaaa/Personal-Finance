@@ -29,10 +29,12 @@ export default function App() {
   const [incomeForm, setIncomeForm] = useState({ amount: '', category: '', description: '', date: todayString })
   const [expenseForm, setExpenseForm] = useState({ amount: '', category: '', description: '', date: todayString })
   const [notifications, setNotifications] = useState([])
+  const [monthlyComparison, setMonthlyComparison] = useState({ incomeChange: 0, expenseChange: 0 })
 
   useEffect(() => {
     // Load transactions from backend on component mount
     fetchTransactions()
+    fetchMonthlySummary()
   }, [])
 
   async function fetchTransactions() {
@@ -47,10 +49,34 @@ export default function App() {
     }
   }
 
+  async function fetchMonthlySummary() {
+    try {
+      const response = await fetch('http://localhost:8080/api/monthly-summary')
+      if (!response.ok) throw new Error('Failed to fetch summary')
+      const data = await response.json()
+      
+      const { current, previous } = data
+      
+      // Calculate percentage changes
+      const incomeChange = previous.income > 0 
+        ? ((current.income - previous.income) / previous.income) * 100 
+        : current.income > 0 ? 100 : 0
+      
+      const expenseChange = previous.expenses > 0 
+        ? ((current.expenses - previous.expenses) / previous.expenses) * 100 
+        : current.expenses > 0 ? 100 : 0
+      
+      setMonthlyComparison({ incomeChange, expenseChange })
+    } catch (error) {
+      console.error('Error fetching monthly summary:', error)
+    }
+  }
+
   const spendingLimit = 12645
 
-  const monthlyIncome = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0)
-  const monthlyExpenses = Math.abs(transactions.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0))
+  const currentMonthStr = todayString.substring(0, 7) // "2026-01" format
+  const monthlyIncome = transactions.filter(t => t.date.substring(0, 7) === currentMonthStr && t.amount > 0).reduce((s, t) => s + t.amount, 0)
+  const monthlyExpenses = Math.abs(transactions.filter(t => t.date.substring(0, 7) === currentMonthStr && t.amount < 0).reduce((s, t) => s + t.amount, 0))
 
   function addNotification(message, type = 'success') {
     const id = Date.now()
@@ -78,6 +104,7 @@ export default function App() {
       setTransactions(t => [newTx, ...t])
       setIncomeForm({ amount: '', category: '', description: '', date: todayString })
       setShowIncome(false)
+      fetchMonthlySummary()
       addNotification('Income added successfully', 'success')
     } catch (error) {
       console.error('Error:', error)
@@ -104,6 +131,7 @@ export default function App() {
       const newTx = { id: Date.now(), date, category: category.charAt(0).toUpperCase() + category.slice(1), amount: -amount, status: 'Success', type: 'expense', description }
       setTransactions(t => [newTx, ...t])
       setExpenseForm({ amount: '', category: '', description: '', date: todayString })
+      fetchMonthlySummary()
       setShowExpense(false)
       addNotification('Expense added successfully', 'success')
     } catch (error) {
@@ -131,7 +159,10 @@ export default function App() {
               <button className="card-menu"><i className="fas fa-ellipsis-h"></i></button>
             </div>
             <div className="amount income-amount">${monthlyIncome.toLocaleString()}</div>
-            <div className="change1"><i className="fas fa-arrow-up"></i>1% vs Last month</div>
+            <div className="change1" style={{ color: monthlyComparison.incomeChange >= 0 ? '#10B981' : '#EF4444' }}>
+              <i className={`fas fa-arrow-${monthlyComparison.incomeChange >= 0 ? 'up' : 'down'}`}></i>
+              {Math.abs(monthlyComparison.incomeChange).toFixed(1)}% vs Last month
+            </div>
           </div>
 
           <div className="card">
@@ -140,7 +171,10 @@ export default function App() {
               <button className="card-menu"><i className="fas fa-ellipsis-h"></i></button>
             </div>
             <div className="amount expense-amount">${monthlyExpenses.toLocaleString()}</div>
-            <div className="change2"><i className="fas fa-arrow-down"></i>-10% vs Last month</div>
+            <div className="change2" style={{ color: monthlyComparison.expenseChange <= 0 ? '#10B981' : '#EF4444' }}>
+              <i className={`fas fa-arrow-${monthlyComparison.expenseChange <= 0 ? 'down' : 'up'}`}></i>
+              {Math.abs(monthlyComparison.expenseChange).toFixed(1)}% vs Last month
+            </div>
           </div>
 
           <div className="card my-card">

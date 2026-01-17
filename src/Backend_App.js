@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { InsertExpense, InsertIncome, GetAllTransactions } from './database.js'
+import { InsertExpense, InsertIncome, GetAllTransactions, GetMonthlySummary } from './database.js'
 
 const app = express()
 const corsOptions = {
@@ -17,6 +17,30 @@ app.get("/api/get-transactions", async (req,res)=>{
     } catch (error) {
         console.error('Error fetching transactions:', error)
         res.status(500).json({ error: 'Failed to fetch transactions', details: error.message })
+    }
+})
+
+app.get("/api/monthly-summary", async (req,res)=>{
+    try {
+        const now = new Date()
+        const currentMonth = now.getMonth() + 1
+        const currentYear = now.getFullYear()
+        
+        const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1
+        const lastYear = currentMonth === 1 ? currentYear - 1 : currentYear
+        
+        const current = await GetMonthlySummary(currentYear, currentMonth)
+        const previous = await GetMonthlySummary(lastYear, lastMonth)
+        
+        res.json({
+            current,
+            previous,
+            currentMonth: { month: currentMonth, year: currentYear },
+            previousMonth: { month: lastMonth, year: lastYear }
+        })
+    } catch (error) {
+        console.error('Error fetching monthly summary:', error)
+        res.status(500).json({ error: 'Failed to fetch summary', details: error.message })
     }
 })
 

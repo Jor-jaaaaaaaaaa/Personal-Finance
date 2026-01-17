@@ -36,4 +36,20 @@ export async function GetAllTransactions(){
     return rows
 }
 
+export async function GetMonthlySummary(year, month){
+    const [incomeResult] = await connection.query(`
+    select COALESCE(SUM(Money), 0) as total from incomeinfo
+    where YEAR(Income_Day) = ? and MONTH(Income_Day) = ?
+    `, [year, month])
+    
+    const [expenseResult] = await connection.query(`
+    select COALESCE(SUM(Money), 0) as total from expenseinfo
+    where YEAR(Expense_Day) = ? and MONTH(Expense_Day) = ?
+    `, [year, month])
+    
+    return {
+        income: incomeResult[0].total,
+        expenses: expenseResult[0].total
+    }
+}
 
