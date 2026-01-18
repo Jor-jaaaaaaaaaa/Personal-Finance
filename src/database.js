@@ -53,3 +53,34 @@ export async function GetMonthlySummary(year, month){
     }
 }
 
+function exportToPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  // Add title
+  doc.setFontSize(16);
+  doc.text('Financial Report', 14, 15);
+  
+  // Add summary
+  doc.setFontSize(12);
+  doc.text(`Income: $${monthlyIncome.toLocaleString()}`, 14, 30);
+  doc.text(`Expenses: $${monthlyExpenses.toLocaleString()}`, 14, 40);
+  doc.text(`Balance: $${(monthlyIncome - monthlyExpenses).toLocaleString()}`, 14, 50);
+  
+  // Add transactions table
+  const tableData = transactions.map(tx => [
+    new Date(tx.date).toLocaleDateString(),
+    tx.category,
+    formatAmount(tx),
+    tx.description
+  ]);
+  
+  doc.autoTable({
+    head: [['Date', 'Category', 'Amount', 'Description']],
+    body: tableData,
+    startY: 60
+  });
+  
+  doc.save('financial-report.pdf');
+}
+
