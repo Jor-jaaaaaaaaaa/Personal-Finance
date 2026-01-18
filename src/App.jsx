@@ -139,6 +139,36 @@ export default function App() {
       addNotification('Failed to add expense', 'error')
     }
   }
+  function exportToPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  // Add title
+  doc.setFontSize(16);
+  doc.text('Financial Report', 14, 15);
+  
+  // Add summary
+  doc.setFontSize(12);
+  doc.text(`Income: $${monthlyIncome.toLocaleString()}`, 14, 30);
+  doc.text(`Expenses: $${monthlyExpenses.toLocaleString()}`, 14, 40);
+  doc.text(`Balance: $${(monthlyIncome - monthlyExpenses).toLocaleString()}`, 14, 50);
+  
+  // Add transactions table
+  const tableData = transactions.map(tx => [
+    new Date(tx.date).toLocaleDateString(),
+    tx.category,
+    formatAmount(tx),
+    tx.description
+  ]);
+  
+  doc.autoTable({
+    head: [['Date', 'Category', 'Amount', 'Description']],
+    body: tableData,
+    startY: 60
+  });
+  
+  doc.save('financial-report.pdf');
+}
 
   return (
     <div>
@@ -147,7 +177,8 @@ export default function App() {
         <div className="header-control">
           <div className="dropdown">Daily <i className="fas fa-chevron-down"></i></div>
           <div className="date-picker"><i className="fas fa-calendar"></i> {formatDate(todayString)}</div>
-          <div className="exportBtn"><i className="fas fa-download"></i> Export</div>
+           {/* <div className="exportBtn"><i className="fas fa-download"></i> Export</div> */}
+           <button className="exportBtn" onClick={exportToPDF} title="Export to PDF"><i className="fas fa-download"></i> Export PDF</button>
         </div>
       </div>
 
