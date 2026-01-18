@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
 const todayString = new Date().toISOString().split('T')[0]
 
 
@@ -141,35 +140,33 @@ export default function App() {
     }
   }
   function exportToPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  
-  // Add title
-  doc.setFontSize(16);
-  doc.text('Financial Report', 14, 15);
-  
-  // Add summary
-  doc.setFontSize(12);
-  doc.text(`Income: $${monthlyIncome.toLocaleString()}`, 14, 30);
-  doc.text(`Expenses: $${monthlyExpenses.toLocaleString()}`, 14, 40);
-  doc.text(`Balance: $${(monthlyIncome - monthlyExpenses).toLocaleString()}`, 14, 50);
-  
-  // Add transactions table
-  const tableData = transactions.map(tx => [
-    new Date(tx.date).toLocaleDateString(),
-    tx.category,
-    formatAmount(tx),
-    tx.description
-  ]);
-  
-  doc.autoTable({
-    head: [['Date', 'Category', 'Amount', 'Description']],
-    body: tableData,
-    startY: 60
-  });
-  
-  doc.save('financial-report.pdf');
-}
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text('Financial Report', 14, 15);
+    
+    // Add summary
+    doc.setFontSize(12);
+    doc.text(`Income: $${monthlyIncome.toLocaleString()}`, 14, 30);
+    doc.text(`Expenses: $${monthlyExpenses.toLocaleString()}`, 14, 40);
+    doc.text(`Balance: $${(monthlyIncome - monthlyExpenses).toLocaleString()}`, 14, 50);
+    
+    // Add transactions as text
+    doc.setFontSize(11);
+    doc.text('Transactions:', 14, 65);
+    
+    let yPosition = 75;
+    transactions.slice(0, 20).forEach(tx => {
+      const date = new Date(tx.date).toLocaleDateString();
+      const amount = formatAmount(tx);
+      const text = `${date} | ${tx.category} | ${amount} | ${tx.description}`;
+      doc.text(text, 14, yPosition);
+      yPosition += 8;
+    });
+    
+    doc.save('financial-report.pdf');
+  }
 
   return (
     <div>
@@ -254,8 +251,8 @@ export default function App() {
               </tr>
             </thead>
             <tbody id="transactions-table">
-              {transactions.map(tx => (
-                <tr key={tx.id}>
+              {transactions.map((tx, index) => (
+                <tr key={index}>
                   <td>{new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                   <td>{tx.category}</td>
                   <td style={{ color: tx.type === 'income' ? '#10B981' : '#EF4444' }}>{formatAmount(tx)}</td>
