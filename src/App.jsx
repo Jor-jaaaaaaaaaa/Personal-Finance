@@ -30,6 +30,7 @@ export default function App() {
   const [expenseForm, setExpenseForm] = useState({ amount: '', category: '', description: '', date: todayString })
   const [notifications, setNotifications] = useState([])
   const [monthlyComparison, setMonthlyComparison] = useState({ incomeChange: 0, expenseChange: 0 })
+  const [openMenuId, setOpenMenuId] = useState(null)
 
   useEffect(() => {
     // Load transactions from backend on component mount
@@ -176,12 +177,12 @@ export default function App() {
         body: JSON.stringify({ id, type })
       })
       if (!response.ok) throw new Error('Failed to delete')
-      showNotification('Transaction deleted successfully', 'success')
+      addNotification('Transaction deleted successfully', 'success')
       fetchTransactions()
       fetchMonthlySummary()
     } catch (error) {
       console.error('Error deleting transaction:', error)
-      showNotification('Failed to delete transaction', 'error')
+      addNotification('Failed to delete transaction', 'error')
     }
   }
 
@@ -208,7 +209,8 @@ export default function App() {
     }
   }
 
-  async function submitIncomeForm() {
+  async function submitIncomeForm(e) {
+    e && e.preventDefault()
     try {
       const url = incomeForm.id ? 'http://localhost:8080/api/update-transaction' : 'http://localhost:8080/api/add-transaction'
       const method = incomeForm.id ? 'PUT' : 'POST'
@@ -223,17 +225,41 @@ export default function App() {
       })
       
       if (!response.ok) throw new Error('Failed to save')
-      showNotification(incomeForm.id ? 'Income updated' : 'Income added', 'success')
+      addNotification(incomeForm.id ? 'Income updated' : 'Income added', 'success')
       setIncomeForm({ amount: '', category: '', description: '', date: todayString })
       setShowIncome(false)
       fetchTransactions()
       fetchMonthlySummary()
     } catch (error) {
-      showNotification('Error saving income', 'error')
+      addNotification('Error saving income', 'error')
     }
   }
 
-  // Similar for submitExpenseForm
+  async function submitExpenseForm(e) {
+    e && e.preventDefault()
+    try {
+      const url = expenseForm.id ? 'http://localhost:8080/api/update-transaction' : 'http://localhost:8080/api/add-transaction'
+      const method = expenseForm.id ? 'PUT' : 'POST'
+      const payload = expenseForm.id 
+        ? { ...expenseForm, type: 'expense' }
+        : { amount: expenseForm.amount, category: expenseForm.category, description: expenseForm.description, date: expenseForm.date, type: 'expense' }
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      
+      if (!response.ok) throw new Error('Failed to save')
+      addNotification(expenseForm.id ? 'Expense updated' : 'Expense added', 'success')
+      setExpenseForm({ amount: '', category: '', description: '', date: todayString })
+      setShowExpense(false)
+      fetchTransactions()
+      fetchMonthlySummary()
+    } catch (error) {
+      addNotification('Error saving expense', 'error')
+    }
+  }
 
   return (
     <div>
@@ -318,13 +344,25 @@ export default function App() {
               </tr>
             </thead>
             <tbody id="transactions-table">
-              {transactions.map((tx, index) => (
-                <tr key={index}>
+              {transactions.map((tx) => (
+                <tr key={tx.id}>
                   <td>{new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                   <td>{tx.category}</td>
                   <td style={{ color: tx.type === 'income' ? '#10B981' : '#EF4444' }}>{formatAmount(tx)}</td>
                   <td><span className="status-success">{tx.status}</span></td>
-                  <td><button className="action-btn"><i className="fas fa-ellipsis-h"></i></button></td>
+                  <td style={{ position: 'relative' }}>
+                    <button className="action-btn" onClick={() => setOpenMenuId(openMenuId === tx.id ? null : tx.id)}><i className="fas fa-ellipsis-h"></i></button>
+                    {openMenuId === tx.id && (
+                      <div className="action-menu">
+                        <button className="action-menu-btn edit" onClick={() => editTransaction(tx)}>
+                           Edit
+                        </button>
+                        <button className="action-menu-btn delete" onClick={() => deleteTransaction(tx.id, tx.type)}>
+                           Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -372,8 +410,8 @@ export default function App() {
               </form>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowIncome(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={addIncome}>Add Income</button>
+              <button className="btn btn-secondary" onClick={() => { setShowIncome(false); setIncomeForm({ amount: '', category: '', description: '', date: todayString }); }}>Cancel</button>
+              <button className="btn btn-primary" onClick={submitIncomeForm}>{incomeForm.id ? 'Update Income' : 'Add Income'}</button>
             </div>
           </div>
         </div>
@@ -415,22 +453,14 @@ export default function App() {
               </form>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowExpense(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={addExpense}>Add Expense</button>
+              <button className="btn btn-secondary" onClick={() => { setShowExpense(false); setExpenseForm({ amount: '', category: '', description: '', date: todayString }); }}>Cancel</button>
+              <button className="btn btn-primary" onClick={submitExpenseForm}>{expenseForm.id ? 'Update Expense' : 'Add Expense'}</button>
             </div>
           </div>
         </div>
       )}
 
       {notifications.map(n => <Notification key={n.id} message={n.message} type={n.type} />)}
-
-      {transactions.map(tx => (
-        <div key={tx.id} className="transaction-item">
-          <div>{tx.description} - {formatAmount(tx)}</div>
-          <button onClick={() => editTransaction(tx)}>Edit</button>
-          <button onClick={() => deleteTransaction(tx.id, tx.type)}>Delete</button>
-        </div>
-      ))}
     </div>
   )
 }
