@@ -53,4 +53,28 @@ export async function GetMonthlySummary(year, month){
     }
 }
 
+export async function UpdateIncome(id, amount, category, description, date){
+    const result = await connection.query(`
+    update incomeinfo 
+    set Money = ?, Category = ?, Yapping = ?, Income_Day = ?
+    where id = ?
+    `, [amount, category, description, date, id])
+    return result;
+}
+
+export async function UpdateExpense(id, amount, category, description, date){
+    const result = await connection.query(`
+    update expenseinfo 
+    set Money = ?, Category = ?, Yapping = ?, Expense_Day = ?
+    where id = ?
+    `, [amount, category, description, date, id])
+    return result;
+}
+
+export async function DeleteTransaction(id, type){
+    const table = type === 'income' ? 'incomeinfo' : 'expenseinfo'
+    const result = await connection.query(`delete from ${table} where id = ?`, [id])
+    return result;
+}
+
 

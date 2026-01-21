@@ -168,6 +168,73 @@ export default function App() {
     doc.save('financial-report.pdf');
   }
 
+  async function deleteTransaction(id, type) {
+    try {
+      const response = await fetch('http://localhost:8080/api/delete-transaction', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, type })
+      })
+      if (!response.ok) throw new Error('Failed to delete')
+      showNotification('Transaction deleted successfully', 'success')
+      fetchTransactions()
+      fetchMonthlySummary()
+    } catch (error) {
+      console.error('Error deleting transaction:', error)
+      showNotification('Failed to delete transaction', 'error')
+    }
+  }
+
+  async function editTransaction(transaction) {
+    // Show edit form with transaction data
+    if (transaction.type === 'income') {
+      setIncomeForm({
+        id: transaction.id,
+        amount: Math.abs(transaction.amount),
+        category: transaction.category,
+        description: transaction.description,
+        date: transaction.date
+      })
+      setShowIncome(true)
+    } else {
+      setExpenseForm({
+        id: transaction.id,
+        amount: Math.abs(transaction.amount),
+        category: transaction.category,
+        description: transaction.description,
+        date: transaction.date
+      })
+      setShowExpense(true)
+    }
+  }
+
+  async function submitIncomeForm() {
+    try {
+      const url = incomeForm.id ? 'http://localhost:8080/api/update-transaction' : 'http://localhost:8080/api/add-transaction'
+      const method = incomeForm.id ? 'PUT' : 'POST'
+      const payload = incomeForm.id 
+        ? { ...incomeForm, type: 'income' }
+        : { amount: incomeForm.amount, category: incomeForm.category, description: incomeForm.description, date: incomeForm.date, type: 'income' }
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      
+      if (!response.ok) throw new Error('Failed to save')
+      showNotification(incomeForm.id ? 'Income updated' : 'Income added', 'success')
+      setIncomeForm({ amount: '', category: '', description: '', date: todayString })
+      setShowIncome(false)
+      fetchTransactions()
+      fetchMonthlySummary()
+    } catch (error) {
+      showNotification('Error saving income', 'error')
+    }
+  }
+
+  // Similar for submitExpenseForm
+
   return (
     <div>
       <div className="header">
@@ -356,6 +423,14 @@ export default function App() {
       )}
 
       {notifications.map(n => <Notification key={n.id} message={n.message} type={n.type} />)}
+
+      {transactions.map(tx => (
+        <div key={tx.id} className="transaction-item">
+          <div>{tx.description} - {formatAmount(tx)}</div>
+          <button onClick={() => editTransaction(tx)}>Edit</button>
+          <button onClick={() => deleteTransaction(tx.id, tx.type)}>Delete</button>
+        </div>
+      ))}
     </div>
   )
 }
