@@ -1,6 +1,6 @@
 import mysql from 'mysql2';
 import dotenv from 'dotenv'
-dotenv.config({ path: '.env' })
+dotenv.config({ path: './src/.env' })
 
 const connection = mysql.createPool({
     host: process.env.HOST,
@@ -27,9 +27,9 @@ export async function InsertExpense(amount, category, description, date){
 
 export async function GetAllTransactions(){
     const [rows] = await connection.query(`
-    select id, Money as amount, Category as category, Yapping as description, Income_Day as date, 'income' as type, 'Success' as status from incomeinfo
+    select CONCAT('income-', id) as id, Money as amount, Category as category, Yapping as description, Income_Day as date, 'income' as type, 'Success' as status from incomeinfo
     union
-    select id, -Money, Category, Yapping, Expense_Day, 'expense', 'Success' from expenseinfo
+    select CONCAT('expense-', id) as id, -Money, Category, Yapping, Expense_Day, 'expense', 'Success' from expenseinfo
     order by date desc
     `)
     

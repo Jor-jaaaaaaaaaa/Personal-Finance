@@ -101,10 +101,9 @@ export default function App() {
       
       if (!response.ok) throw new Error('Failed to add income')
       
-      const newTx = { id: Date.now(), date, category: category.charAt(0).toUpperCase() + category.slice(1), amount, status: 'Success', type: 'income', description }
-      setTransactions(t => [newTx, ...t])
       setIncomeForm({ amount: '', category: '', description: '', date: todayString })
       setShowIncome(false)
+      fetchTransactions()
       fetchMonthlySummary()
       addNotification('Income added successfully', 'success')
     } catch (error) {
@@ -129,9 +128,8 @@ export default function App() {
       
       if (!response.ok) throw new Error('Failed to add expense')
       
-      const newTx = { id: Date.now(), date, category: category.charAt(0).toUpperCase() + category.slice(1), amount: -amount, status: 'Success', type: 'expense', description }
-      setTransactions(t => [newTx, ...t])
       setExpenseForm({ amount: '', category: '', description: '', date: todayString })
+      fetchTransactions()
       fetchMonthlySummary()
       setShowExpense(false)
       addNotification('Expense added successfully', 'success')
@@ -170,11 +168,14 @@ export default function App() {
   }
 
   async function deleteTransaction(id, type) {
+    // Extract numeric ID from string format "income-3" or "expense-3"
+    const numericId = parseInt(id.split('-')[1])
+    
     try {
       const response = await fetch('http://localhost:8080/api/delete-transaction', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, type })
+        body: JSON.stringify({ id: numericId, type })
       })
       if (!response.ok) throw new Error('Failed to delete')
       addNotification('Transaction deleted successfully', 'success')
@@ -187,10 +188,13 @@ export default function App() {
   }
 
   async function editTransaction(transaction) {
+    // Extract numeric ID from string format "income-3" or "expense-3"
+    const numericId = parseInt(transaction.id.split('-')[1])
+    
     // Show edit form with transaction data
     if (transaction.type === 'income') {
       setIncomeForm({
-        id: transaction.id,
+        id: numericId,
         amount: Math.abs(transaction.amount),
         category: transaction.category,
         description: transaction.description,
@@ -199,7 +203,7 @@ export default function App() {
       setShowIncome(true)
     } else {
       setExpenseForm({
-        id: transaction.id,
+        id: numericId,
         amount: Math.abs(transaction.amount),
         category: transaction.category,
         description: transaction.description,
@@ -354,11 +358,11 @@ export default function App() {
                     <button className="action-btn" onClick={() => setOpenMenuId(openMenuId === tx.id ? null : tx.id)}><i className="fas fa-ellipsis-h"></i></button>
                     {openMenuId === tx.id && (
                       <div className="action-menu">
-                        <button className="action-menu-btn edit" onClick={() => editTransaction(tx)}>
-                           Edit
+                        <button className="action-menu-btn edit" onClick={() => { editTransaction(tx); setOpenMenuId(null); }}>
+                          <i className="fas fa-edit" style={{ marginRight: '0.5rem' }}></i> Edit
                         </button>
-                        <button className="action-menu-btn delete" onClick={() => deleteTransaction(tx.id, tx.type)}>
-                           Delete
+                        <button className="action-menu-btn delete" onClick={() => { deleteTransaction(tx.id, tx.type); setOpenMenuId(null); }}>
+                          <i className="fas fa-trash" style={{ marginRight: '0.5rem' }}></i> Delete
                         </button>
                       </div>
                     )}
