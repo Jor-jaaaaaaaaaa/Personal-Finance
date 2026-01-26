@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { jsPDF } from "jspdf";
+const API_BASE_URL = "http://localhost:8080";
 const todayString = new Date().toISOString().split("T")[0];
 
 function formatDate(dateString) {
@@ -72,7 +73,7 @@ export default function App() {
   async function fetchTransactions() {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/get-transactions",
+        `${API_BASE_URL}/api/get-transactions`,
       );
       if (!response.ok) throw new Error("Failed to fetch transactions");
       const data = await response.json();
@@ -85,7 +86,7 @@ export default function App() {
 
   async function fetchMonthlySummary() {
     try {
-      const response = await fetch("http://localhost:8080/api/monthly-summary");
+      const response = await fetch(`${API_BASE_URL}/api/monthly-summary`);
       if (!response.ok) throw new Error("Failed to fetch summary");
       const data = await response.json();
 
@@ -310,7 +311,7 @@ export default function App() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/delete-transaction",
+        `${API_BASE_URL}/api/delete-transaction`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -357,8 +358,8 @@ export default function App() {
     e && e.preventDefault();
     try {
       const url = incomeForm.id
-        ? "http://localhost:8080/api/update-transaction"
-        : "http://localhost:8080/api/add-transaction";
+        ? `${API_BASE_URL}/api/update-transaction`
+        : `${API_BASE_URL}/api/add-transaction`;
       const method = incomeForm.id ? "PUT" : "POST";
       const payload = incomeForm.id
         ? { ...incomeForm, type: "income" }
@@ -399,8 +400,8 @@ export default function App() {
     e && e.preventDefault();
     try {
       const url = expenseForm.id
-        ? "http://localhost:8080/api/update-transaction"
-        : "http://localhost:8080/api/add-transaction";
+        ? `${API_BASE_URL}/api/update-transaction`
+        : `${API_BASE_URL}/api/add-transaction`;
       const method = expenseForm.id ? "PUT" : "POST";
       const payload = expenseForm.id
         ? { ...expenseForm, type: "expense" }

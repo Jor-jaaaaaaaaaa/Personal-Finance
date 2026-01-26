@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config({ path: './src/.env' })
 
 const connection = mysql.createPool({
-    host: process.env.HOST,
+    host: process.env.HOST || 'host.docker.internal',
     user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE}
