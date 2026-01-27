@@ -11,15 +11,11 @@ services:
       MYSQL_USER: ${DB_USER:-finance_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-finance_password}
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:
       - finance-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
 
   backend:
     build:
@@ -32,11 +28,10 @@ services:
       DB_HOST: database
       DB_PORT: 3306
     depends_on:
-      database:
-        condition: service_healthy
+      - database
     networks:
       - finance-network
-
+    
   frontend:
     build:
       context: .
@@ -45,7 +40,7 @@ services:
       - "5173:5173"
     env_file: .env
     environment:
-      - VITE_API_URL=http://backend:8080
+      - VITE_API_URL=http://localhost:8080
     depends_on:
       - backend
     networks:
@@ -57,3 +52,5 @@ volumes:
 networks:
   finance-network:
     driver: bridge
+
+

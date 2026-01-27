@@ -1,12 +1,12 @@
 import mysql from 'mysql2';
 import dotenv from 'dotenv'
-dotenv.config({ path: './src/.env' })
+dotenv.config({ path: './.env' })
 
 const connection = mysql.createPool({
-    host: process.env.HOST || 'host.docker.internal',
-    user: process.env.USER,
-    password: process.env.PASSWORD,
-    database: process.env.DATABASE}
+    host: process.env.DB_HOST || 'database',
+    user: process.env.DB_USER || 'finance_user',
+    password: process.env.DB_PASSWORD || 'finance_password',
+    database: process.env.DB_NAME || 'personal_finance'}
 ).promise()
 
 export async function InsertIncome(amount, category, description, date){

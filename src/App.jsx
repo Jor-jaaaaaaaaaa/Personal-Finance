@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { jsPDF } from "jspdf";
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-const response = await fetch(`${apiUrl}/api/get-transactions`);
 const todayString = new Date().toISOString().split("T")[0];
 
 function formatDate(dateString) {
@@ -74,7 +73,7 @@ export default function App() {
   async function fetchTransactions() {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/get-transactions`,
+        `${apiUrl}/api/get-transactions`,
       );
       if (!response.ok) throw new Error("Failed to fetch transactions");
       const data = await response.json();
@@ -87,7 +86,7 @@ export default function App() {
 
   async function fetchMonthlySummary() {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/monthly-summary`);
+      const response = await fetch(`${apiUrl}/api/monthly-summary`);
       if (!response.ok) throw new Error("Failed to fetch summary");
       const data = await response.json();
 
@@ -173,12 +172,12 @@ export default function App() {
 
   const currentMonthStr = todayString.substring(0, 7); // "2026-01" format
   const monthlyIncome = transactions
-    .filter((t) => t.date.substring(0, 7) === currentMonthStr && t.amount > 0)
-    .reduce((s, t) => s + t.amount, 0);
+    .filter((t) => t.date.substring(0, 7) === currentMonthStr && parseFloat(t.amount) > 0)
+    .reduce((s, t) => s + parseFloat(t.amount), 0);
   const monthlyExpenses = Math.abs(
     transactions
-      .filter((t) => t.date.substring(0, 7) === currentMonthStr && t.amount < 0)
-      .reduce((s, t) => s + t.amount, 0),
+      .filter((t) => t.date.substring(0, 7) === currentMonthStr && parseFloat(t.amount) < 0)
+      .reduce((s, t) => s + parseFloat(t.amount), 0),
   );
 
   function addNotification(message, type = "success") {
@@ -200,7 +199,7 @@ export default function App() {
     try {
       // Send to backend
       const response = await fetch(
-        "http://localhost:8080/api/add-transaction",
+        `${apiUrl}/api/add-transaction`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -242,7 +241,7 @@ export default function App() {
     try {
       // Send to backend
       const response = await fetch(
-        "http://localhost:8080/api/add-transaction",
+        `${apiUrl}/api/add-transaction`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -312,7 +311,7 @@ export default function App() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/delete-transaction`,
+        `${apiUrl}/api/delete-transaction`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -359,8 +358,8 @@ export default function App() {
     e && e.preventDefault();
     try {
       const url = incomeForm.id
-        ? `${API_BASE_URL}/api/update-transaction`
-        : `${API_BASE_URL}/api/add-transaction`;
+        ? `${apiUrl}/api/update-transaction`
+        : `${apiUrl}/api/add-transaction`;
       const method = incomeForm.id ? "PUT" : "POST";
       const payload = incomeForm.id
         ? { ...incomeForm, type: "income" }
@@ -401,8 +400,8 @@ export default function App() {
     e && e.preventDefault();
     try {
       const url = expenseForm.id
-        ? `${API_BASE_URL}/api/update-transaction`
-        : `${API_BASE_URL}/api/add-transaction`;
+        ? `${apiUrl}/api/update-transaction`
+        : `${apiUrl}/api/add-transaction`;
       const method = expenseForm.id ? "PUT" : "POST";
       const payload = expenseForm.id
         ? { ...expenseForm, type: "expense" }
@@ -468,7 +467,7 @@ export default function App() {
               <h3 className="card-title">Monthly Income</h3>
             </div>
             <div className="amount income-amount">
-              ${monthlyIncome.toLocaleString()}
+              ${monthlyIncome.toFixed(2).toLocaleString()}
             </div>
             <div
               className="change1"
@@ -490,7 +489,7 @@ export default function App() {
               <h3 className="card-title">Monthly Expenses</h3>
             </div>
             <div className="amount expense-amount">
-              ${monthlyExpenses.toLocaleString()}
+              ${monthlyExpenses.toFixed(2).toLocaleString()}
             </div>
             <div
               className="change2"
