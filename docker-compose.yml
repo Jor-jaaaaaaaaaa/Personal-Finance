@@ -1,6 +1,42 @@
 version: '3.8'
 
 services:
+  database:
+    image: mysql:8.0
+    container_name: personal_finance_db
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-personal_finance}
+      MYSQL_USER: ${DB_USER:-finance_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-finance_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - finance-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      DB_HOST: database
+      DB_PORT: 3306
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - finance-network
+
   frontend:
     build:
       context: .
@@ -15,15 +51,8 @@ services:
     networks:
       - finance-network
 
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-    ports:
-      - "8080:8080"
-    env_file: .env
-    networks:
-      - finance-network
+volumes:
+  db_data:
 
 networks:
   finance-network:
