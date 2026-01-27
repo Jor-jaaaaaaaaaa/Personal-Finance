@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { jsPDF } from "jspdf";
-const API_BASE_URL = "http://localhost:8080";
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const response = await fetch(`${apiUrl}/api/get-transactions`);
 const todayString = new Date().toISOString().split("T")[0];
 
 function formatDate(dateString) {
